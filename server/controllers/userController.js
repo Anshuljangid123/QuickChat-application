@@ -1,3 +1,4 @@
+import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
@@ -25,6 +26,7 @@ export const signup = async(req , res) => {
         // for the new user we are encrypting the password , using the salt and given password string using the bcrupt library 
 
         const salt = await bcrypt.genSalt(10) ;
+        // hashing the password . 
         const hashedPassword = await bcrypt.hash(password , salt);
 
         const newUser = await User.create({
@@ -39,6 +41,77 @@ export const signup = async(req , res) => {
 
     }catch(error){
         res.json({success : false , message : error.message});
+        console.log(error.message);
+        
+    }
+}
+
+// controller to login the user 
+
+export const login = async() => {
+
+    try{
+        const {email , password} = req.body ; 
+        // find the user for this email id 
+        const userData = await User.findOne({email});
+        if(userData == null){
+            return res.json({success : false  , message : "user not found in the db "});
+        }
+        const isPasswordCorrect = await bcrypt.compare(password , userData.password);
+        // if the password from the body do not match the password from the db then they are not the same user and cannot be login 
+
+        if(!isPasswordCorrect){
+            return res.json({success : false , message : "invalid credentials"});
+        }
+
+        // now the password from the body and the db are both same 
+        // so generate the token for the authnetication 
+
+        const token = generateToken(userData._id);
+        // here we are sending the token to the frontend or headers 
+
+        res.json({success : true  , userData, token , message : "Account created successfully "});
+
+    }catch(error){  
+        res.json({success : false , message : error.message});
+        console.log(error.message);
+    }
+}
+
+
+// whether the user is authenticated or not 
+
+export const checkAuth = (req , res) => {
+    res.json({success : true , user : req.user});
+
+}
+
+// controller to update the user profile details 
+export const updateProfile = async(req , res) => {
+    try{
+        const {profilePic , bio , fullName} = req.body;
+
+        const userId = req.user._id ; 
+        let updatedUser  ; 
+        // check the user want to update the profile pic also or just bio and fullname . 
+        if(!profilePic){
+            // update name and bio , we do not have profilePic 
+            updatedUser =  await User.findByIdAndUpdate(userId , {bio , fullName}, {new : true})
+        }
+        else{
+            //profile pic is also provided 
+            // upload the pic on the cloudinary and from there we will get the url of the pic .
+
+            const upload  = await cloudinary.uploader.upload(profilePic);
+            // it will return a url 
+            // it will upload the profile pic
+
+            updatedUser = await User.findByIdAndUpdate(userId , {profilePic : upload.secure_url , bio , fullName} , {new : true});
+        }
+        res.json({success: true , user : updatedUser});
+    }
+    catch(error){
+        res.json({success : false , message : error.message})
         console.log(error.message);
         
     }
