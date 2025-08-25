@@ -4,13 +4,17 @@ import HomePage from './pages/homepage'
 import LoginPage from './pages/LoginPage'
 import ProfilePage from './pages/ProfilePage'
 import assets from './assets/assets'
+import {Toaster} from 'react-hot-toast';
+
 
 const App = () => {
   return (
     
     <div className="bg-[url('./src/assets/bgImage.svg')] bg-contain">
     {/* we have added the background image using tailwind class , this image will be visible for all the pages .  ; */}
-
+      <Toaster/>
+      {/* it enables toast use */}
+      
       <Routes>
         <Route path='/' element={<HomePage/>}/>
         <Route path='/login' element={<LoginPage/>}/>
