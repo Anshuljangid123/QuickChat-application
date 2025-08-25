@@ -8,6 +8,12 @@ import userRouter from "./routes/userRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
 
 import { Server } from "socket.io";
+
+import dotenv from "dotenv";
+dotenv.config();
+
+
+
 // You are importing the Server class from the socket.io library.
 //This allows you to create a WebSocket server that can handle real-time communication between clients and your backend.
 
@@ -32,7 +38,7 @@ io.on("connection" , (socket) => {
     // and the list is stored in userSocketMap as key value pairs . 
     const userId = socket.handshake.query.userId;
     // When connecting from the frontend, you send userId in the handshake query.
-    
+
     console.log("user connected " , userId );
 
     if(userId) userSocketMap[userId] = socket.id;
@@ -68,6 +74,13 @@ app.use("/api/status" , (req ,res) => res.send("server is live ") );
 app.use("/api/auth" , userRouter);// for user endpoint .
 
 app.use("/api/messages" , messageRouter);
+
+app.use((err, req, res, next) => {
+  console.error("❌ Server error:", err.stack);
+  res.status(500).json({ error: err.message });
+});
+
+
 // connect to mongo db 
 await connectDb();
 

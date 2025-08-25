@@ -1,6 +1,7 @@
 // it is executed before the controller function . 
 
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 
 // middleware to protect routes
 
@@ -23,7 +24,7 @@ export const protedtRoute = async(req , res ,next) => {
         // attaches the authenticated user’s details (fetched from DB) to the request object, so that subsequent middlewares or controllers can use it easily.
         next(); 
     }
-    
+
     catch(error){
         res.json({success : false , message : error.message});
         console.log(error.message);

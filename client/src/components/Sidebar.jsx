@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import assets, { userDummyData } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../context/AuthContext';
 
 const Sidebar = ({selectedUser , setSelectedUser}) => {
     const navigate= useNavigate();
+
+    const {logout} = useContext(AuthContext);
+
 
 
 
@@ -17,7 +21,8 @@ const Sidebar = ({selectedUser , setSelectedUser}) => {
                     <div className='absolute top-full right-0 z-20 w-32 p-5 rounded-md bg-[#282142] border border-gray-600 text-gray-100 hidden group-hover:block'>
                         <p onClick={() => navigate('/profile')} className='cursor-pointer text-sm'>Edit profile </p>
                         <hr className='my-2 border-t border-gray-500'/>
-                        <p className='cursor-pointer text-sm'> Logout </p>
+
+                        <p onClick={() => logout()} className='cursor-pointer text-sm'> Logout </p>
                     </div>
                 </div>
             </div>
@@ -43,7 +48,7 @@ const Sidebar = ({selectedUser , setSelectedUser}) => {
                         {
                             index < 3 
                             ? <span className='text-green-400 text-xs'>online</span>
-                            : <span className='text-neutra-400 text-xs'>offline</span>
+                            : <span className='text-neutral-400 text-xs'>offline</span>
                         }
                     </div>
                     {index > 2 && <p className='absolute top-4 right-4 text-xs h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50'>{index}</p>}

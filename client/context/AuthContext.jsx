@@ -1,12 +1,12 @@
 // central contailner
 // state variable and function related to authentication 
 
-import { Children, useEffect, useState } from "react";
-import { createContext } from "vm";
+import {useEffect, useState } from "react";
+import { createContext } from "react";
 
 import axios from "axios";
 import toast from "react-hot-toast";
-import { connect } from "http2";
+//import { connect } from "http2";
 
 import {io} from "socket.io-client";
 
@@ -23,7 +23,7 @@ export const AuthContext = createContext();
 //Context in React provides a way to share values (like data, functions, or state) between components without passing props manually at every level (called prop drilling).
 
 // auth provider func
-export const AuthProvider = ({Children}) => {
+export const AuthProvider = ({children}) => {
 
     const [token , setToken] = useState(localStorage.getItem("token"));
     const [authUser , setAuthUser] = useState(null);
@@ -90,10 +90,47 @@ export const AuthProvider = ({Children}) => {
             toast.error(error.message);
 
         }
+
     }
 
     // logout function to handle user logout and socket disconnection 
-    
+    const logout  = async() => {
+        localStorage.removeItem("token");
+        // localStorage is persistent storage in the browser. Removing the token means on reload the app won't find credentials and will treat the user as logged out.
+        // when we remove the token from the localstorage the user will be logged out from the application 
+
+        setToken(null);
+
+        setAuthUser(null);
+
+        setOnlineUser([]);
+        // Clears the list of online users in state.
+        // => removes any presence indicators tied to the logged-in user.
+
+        axios.defaults.headers.common["token"] = null;
+
+        toast.success("logged out successfully ");
+
+        socket.disconnect();
+         // Tells the socket/io client to close the real-time connection with the server.
+        // => Server receives 'disconnect' and can mark the user as offline.
+
+    }
+
+    // update profile function to handle user profile updates 
+    const updateProfile = async(body) => {
+        try{
+            const {data} = await axios.put("/api/auth/update-profile" , body);
+            // check the response of the api call
+            if(data.success) {
+                setAuthUser(data.user);
+                toast.success("profile updated successfully ");
+            }
+        }
+        catch(error){
+            toast.error(error.message);
+        }
+    }
 
     //connect socket function to handle socket connection and online users updates .
     const connectSocket = (userData) => {
@@ -133,12 +170,15 @@ export const AuthProvider = ({Children}) => {
         axios , 
         authUser, 
         onlineUser, 
-        socket 
+        socket ,
+        login , 
+        logout , 
+        updateProfile 
         
     }
     return (
-        <AuthContext.provider value={value}>
-            {Children}
-        </AuthContext.provider>
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
     )
 }

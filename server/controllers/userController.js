@@ -48,7 +48,7 @@ export const signup = async(req , res) => {
 
 // controller to login the user 
 
-export const login = async() => {
+export const login = async(req , res) => {
 
     try{
         const {email , password} = req.body ; 
@@ -103,6 +103,7 @@ export const updateProfile = async(req , res) => {
             // upload the pic on the cloudinary and from there we will get the url of the pic .
 
             const upload  = await cloudinary.uploader.upload(profilePic);
+            console.log("Cloudinary upload result: ---------", upload);
             // it will return a url 
             // it will upload the profile pic
 
@@ -113,6 +114,5 @@ export const updateProfile = async(req , res) => {
     catch(error){
         res.json({success : false , message : error.message})
         console.log(error.message);
-        
     }
 }

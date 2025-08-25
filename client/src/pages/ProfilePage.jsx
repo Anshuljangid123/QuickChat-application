@@ -1,18 +1,40 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import {useNavigate} from 'react-router-dom';
 import assets from '../assets/assets';
+import { AuthContext } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
+
+  const {authUser , updateProfile} = useContext(AuthContext);
 
   const [selectedImg , setSelectedImg] = useState(null);
   const navigate = useNavigate();
 
-  const [name , setName] = useState("Martin Jhonson");
-  const [bio , setBio] = useState("hi everyone i am using quick chat application .")
+  const [name , setName] = useState(authUser.fullName);
+  const [bio , setBio] = useState(authUser.bio);
 
   const handleSubmit = async(e) => {
     e.preventDefault();
-    navigate('/')
+    // whether the image is selected or not 
+    if(!selectedImg) {
+      await updateProfile({fullName : name  , bio});
+      navigate('/')
+      return ; 
+    }
+
+    // if image is selected 
+    // convert the image and convert the image into base 64 image . 
+    const render = new FileReader() ; 
+    render.readAsDataURL(selectedImg);
+
+    render.onload = async () => {
+      const base64Image = render.result;
+      await updateProfile({profilePic : base64Image , fullName : name , bio});
+      toast.success("profile pic updated successfully ");
+      navigate("/");
+    }
+    
   }
 
   return (
@@ -23,7 +45,7 @@ const ProfilePage = () => {
           <h3 className='text-lg'>Profile Details</h3>
           <label htmlFor='avatar' className='flex items-center gap-3 cursor-pointer'>
 
-            <input onChange={(e) => setSelectedImg(e.target.files[0])} type='file' id='avatar' accept='.png , .jpg , .jpeg' hidden/>
+            <input onChange={(e) => setSelectedImg(e.target.files[0])} type='file' id='avatar' accept='.png,.jpg,.jpeg' hidden/>
 
             {/* get the image using the state vairable  */}
             <img className={`w-12 h-12 ${selectedImg && "rounded-full"}`} src={selectedImg ? URL.createObjectURL(selectedImg) : assets.avatar_icon}/>
@@ -40,7 +62,7 @@ const ProfilePage = () => {
 
         </form>
 
-        <img src={assets.logo_icon} className='max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10' alt=''/>
+        <img src={authUser?.profilePic || assets.logo_icon} className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10 ${selectedImg && "rounded-full"}`} alt=''/>
       </div>
     </div>
   )
