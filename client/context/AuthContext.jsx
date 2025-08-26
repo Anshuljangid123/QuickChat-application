@@ -24,7 +24,6 @@ export const AuthContext = createContext();
 
 // auth provider func
 export const AuthProvider = ({children}) => {
-
     const [token , setToken] = useState(localStorage.getItem("token"));
     const [authUser , setAuthUser] = useState(null);
     const [onlineUser , setOnlineUser] = useState([]);
